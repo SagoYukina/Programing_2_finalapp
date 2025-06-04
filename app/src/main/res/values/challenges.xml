@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="challenge_list">
+        <item>「おはよう」を 3 人に自分から言う</item>
+        <item>エレベーターで“開”ボタンを押してあげる</item>
+        <item>鏡の前で自分に向かってバカ笑いしてみよう！</item>
+    </string-array>
+
+</resources>

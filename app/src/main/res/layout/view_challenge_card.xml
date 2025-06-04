@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 花柄リング＋テキストを重ねるだけなので FrameLayout が最小構成 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/card_bg_round"
+    android:layout_marginHorizontal="24dp"
+    android:layout_marginTop="32dp"
+    android:padding="24dp">
+
+    <!-- 花柄リング（背景オブジェクト） -->
+    <ImageView
+        android:id="@+id/flowerRing"
+        android:layout_width="560dp"
+        android:layout_height="560dp"
+        android:layout_gravity="center"
+        android:src="@drawable/card_flower_ring"
+        android:scaleType="fitCenter"
+        android:alpha="0.85"
+        android:contentDescription="@null"/>
+
+    <!-- チャレンジ文 -->
+    <TextView
+        android:id="@+id/challengeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/brandGray"
+        android:textSize="20sp"
+        android:textAlignment="center"
+        android:lineSpacingExtra="4dp"/>
+</FrameLayout>
