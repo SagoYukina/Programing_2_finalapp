@@ -1,9 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="challenge_list">
-        <item>「おはよう」を 3 人に自分から言う</item>
-        <item>エレベーターで“開”ボタンを押してあげる</item>
-        <item>鏡の前で自分に向かってバカ笑いしてみよう！</item>
+        <item>大きく深呼吸してリラックスする</item>
+        <item>窓を全開にして新鮮な空気を吸う</item>
+        <item>自分に向かって鏡で笑顔を作る</item>
+        <item>部屋の1箇所だけ片付ける</item>
+        <item>今日あった良いことを3つ書き出す</item>
+        <item>友達に最近の嬉しかったことをメッセージで伝える</item>
+        <item>今の気分を日記に書く</item>
+        <item>1分間だけ目を閉じて瞑想する</item>
+        <item>好きな歌を心の中で全力で歌う</item>
+        <item>スマホの写真を見返して思い出に浸る</item>
+        <item>自分への応援メッセージを声に出して言う</item>
+        <item>短い詩や名言を声に出して読む</item>
+        <item>屋外を5分だけ歩き回る</item>
+        <item>近所の人ににっこり挨拶する</item>
+        <item>ドアを開けてあげるなど誰かに親切にする</item>
+        <item>家族や同居人に「ありがとう」を伝える</item>
+        <item>友達にちょっとした励ましの言葉を送る</item>
+        <item>好きな本を1ページ音読する</item>
+        <item>好きな曲で30秒間ダンスする</item>
+        <item>自分のお気に入りポーズを鏡の前で決める</item>
+        <item>足つぼを自分でマッサージする</item>
+        <item>簡単なストレッチを3つ行う</item>
+        <item>今日の目標をひとつ決める</item>
+        <item>将来の夢をノートに1行書く</item>
+        <item>お気に入りの言葉を3回唱える</item>
+        <item>空を見上げて雲の形を探す</item>
+        <item>夜空の星を数えて眺める</item>
+        <item>鏡に向かって自分をハグする</item>
+        <item>自分の長所を3つ心の中で唱える</item>
+        <item>スマホの通知を5分間オフにする</item>
+        <item>目の前の景色をじっくり観察する</item>
+        <item>手書きで簡単なイラストを描く</item>
+        <item>短い笑い話を自分で考えてみる</item>
+        <item>腕をぐるぐる回して肩をほぐす</item>
+        <item>近くの草木の香りを深呼吸で感じる</item>
+        <item>鏡に自分の名前を褒め言葉にして書き込む</item>
+        <item>自分で自分に拍手を送る</item>
+        <item>鼓動を意識して数分間心拍を感じる</item>
+        <item>「幸せ」と5回唱える</item>
+        <item>今日の自分をひとつ褒める</item>
+        <item>かかと落としを10回試す</item>
+        <item>腰を左右にひねるストレッチ</item>
+        <item>四つ葉のクローバーを探して散歩する</item>
+        <item>架空の友人にメッセージを書く</item>
+        <item>以前撮った写真にコメントをつける</item>
+        <item>好きな色のものを5つ心に思い浮かべる</item>
+        <item>ゆっくり首を回す</item>
+        <item>小さな目標を決めてすぐ達成する</item>
+        <item>腹式呼吸を5回行う</item>
+        <item>次の笑えるネタを考える</item>
     </string-array>
-
 </resources>

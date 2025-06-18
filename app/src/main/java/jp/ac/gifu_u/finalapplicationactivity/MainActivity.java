@@ -1,6 +1,7 @@
 package jp.ac.gifu_u.finalapplicationactivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -20,6 +21,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);                 // もともとの処理①
         setContentView(R.layout.activity_main); // もともとの処理②
+
+        // チャレンジ文のリストを取得
+        String[] challenges = getResources().getStringArray(R.array.challenge_list);
+        Log.d("ChallengeTest", "challenge[0] = " + challenges[0]);
 
         // ステータスバー分のパディング反映（もともとの処理③）
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
