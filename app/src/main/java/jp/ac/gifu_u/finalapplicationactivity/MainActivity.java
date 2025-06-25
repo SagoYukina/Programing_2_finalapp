@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.widget.Button;
+import android.widget.Toast;
 
 import jp.ac.gifu_u.finalapplicationactivity.util.ChallengeUtil;   // ← util のパッケージに合わせて
 
@@ -41,5 +43,10 @@ public class MainActivity extends AppCompatActivity {
 
         // ② 今日のチャレンジを取得して表示
         challengeText.setText(ChallengeUtil.getTodayChallenge(this));
+
+        Button completeButton = findViewById(R.id.completeButton);
+        completeButton.setOnClickListener(v -> {
+            Toast.makeText(MainActivity.this, "チャレンジ達成！", Toast.LENGTH_SHORT).show();
+        });
     }
 }
