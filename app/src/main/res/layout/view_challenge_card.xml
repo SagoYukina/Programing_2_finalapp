@@ -33,5 +33,5 @@
         android:lineSpacingExtra="4dp"
         android:layout_gravity="center"
         android:includeFontPadding="false"
-        android:padding="16dp" />
+        android:padding="16dp"/>
 </FrameLayout>
