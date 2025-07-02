@@ -34,4 +34,13 @@
         android:layout_gravity="center"
         android:includeFontPadding="false"
         android:padding="16dp"/>
+
+    <ImageView
+        android:id="@+id/hanamaruImage"
+        android:layout_width="700dp"
+        android:layout_height="700dp"
+        android:src="@drawable/hanamaru"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        />
 </FrameLayout>
