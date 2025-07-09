@@ -1,5 +1,6 @@
 package jp.ac.gifu_u.finalapplicationactivity;
 
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -16,6 +17,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import jp.ac.gifu_u.finalapplicationactivity.util.ChallengeUtil;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,13 +29,19 @@ public class MainActivity extends AppCompatActivity {
     private Button completeButton;
     private ImageView hanamaruImage;
 
+    private SharedPreferences prefs;
+    private final String PREFS_NAME = "ChallengePrefs";
+    private final String KEY_DATE = "done_date";
+    private final String KEY_DONE = "done";
+
+    private String today;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);  // ← layoutファイル名が"activity_main.xml"でOK
+        setContentView(R.layout.activity_main);
 
-        // チャレンジ文のリストを取得
         String[] challenges = getResources().getStringArray(R.array.challenge_list);
         Log.d("ChallengeTest", "challenge[0] = " + challenges[0]);
 
@@ -42,24 +53,58 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(findViewById(R.id.toolbar));
 
-        // チャレンジ文をセット
         challengeText = findViewById(R.id.challengeText);
         challengeText.setText(ChallengeUtil.getTodayChallenge(this));
 
-        // ボタン・花丸のView取得
         completeButton = findViewById(R.id.completeButton);
-        hanamaruImage = findViewById(R.id.hanamaruImage);  // 画像Viewをxmlに定義しておくこと！
+        hanamaruImage = findViewById(R.id.hanamaruImage);
 
-        // ボタンクリック時の処理
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+
+        loadButtonState();
+
         completeButton.setOnClickListener(v -> {
-            Toast.makeText(MainActivity.this, "チャレンジ達成！", Toast.LENGTH_SHORT).show();
+            boolean isDone = prefs.getBoolean(KEY_DONE, false);
 
-            // ボタンの色を暗くする
-            completeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C98A4A")));
-            completeButton.setEnabled(false);  // 再クリック防止
-
-            // 花丸を表示
-            hanamaruImage.setVisibility(View.VISIBLE);
+            if (isDone) {
+                // 押し直したら未達成状態に戻す
+                prefs.edit().putBoolean(KEY_DONE, false).apply();
+                resetButtonState();
+                Toast.makeText(MainActivity.this, "キャンセルしました", Toast.LENGTH_SHORT).show();
+            } else {
+                // 達成した場合の保存
+                prefs.edit()
+                        .putBoolean(KEY_DONE, true)
+                        .putString(KEY_DATE, today)
+                        .apply();
+                setButtonToDoneState();
+                Toast.makeText(MainActivity.this, "チャレンジ達成！", Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    private void loadButtonState() {
+        String savedDate = prefs.getString(KEY_DATE, "");
+        boolean isDone = prefs.getBoolean(KEY_DONE, false);
+
+        if (today.equals(savedDate) && isDone) {
+            setButtonToDoneState();
+        } else {
+            resetButtonState();
+            prefs.edit().putBoolean(KEY_DONE, false).putString(KEY_DATE, today).apply();
+        }
+    }
+
+    private void setButtonToDoneState() {
+        completeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C98A4A")));
+        completeButton.setText("やった！");
+        hanamaruImage.setVisibility(View.VISIBLE);
+    }
+
+    private void resetButtonState() {
+        completeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F1B971")));
+        completeButton.setText("やった！");
+        hanamaruImage.setVisibility(View.INVISIBLE);
     }
 }
