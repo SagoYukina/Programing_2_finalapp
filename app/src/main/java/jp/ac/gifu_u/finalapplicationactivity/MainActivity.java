@@ -13,11 +13,9 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -25,7 +23,6 @@ import jp.ac.gifu_u.finalapplicationactivity.util.ChallengeUtil;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView challengeText;
     private Button completeButton;
     private ImageView hanamaruImage;
 
@@ -33,35 +30,26 @@ public class MainActivity extends AppCompatActivity {
     private final String PREFS_NAME = "ChallengePrefs";
     private final String KEY_DATE = "done_date";
     private final String KEY_DONE = "done";
+    private final String KEY_LAST_DATE = "last_date";
+    private final String KEY_STREAK = "streak";
 
     private String today;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        String[] challenges = getResources().getStringArray(R.array.challenge_list);
-        Log.d("ChallengeTest", "challenge[0] = " + challenges[0]);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-            return insets;
-        });
-
-        setSupportActionBar(findViewById(R.id.toolbar));
-
-        challengeText = findViewById(R.id.challengeText);
+        TextView challengeText = findViewById(R.id.challengeText);
         challengeText.setText(ChallengeUtil.getTodayChallenge(this));
 
         completeButton = findViewById(R.id.completeButton);
         hanamaruImage = findViewById(R.id.hanamaruImage);
 
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
-
         loadButtonState();
 
         completeButton.setOnClickListener(v -> {
@@ -81,7 +69,10 @@ public class MainActivity extends AppCompatActivity {
                 setButtonToDoneState();
                 Toast.makeText(MainActivity.this, "チャレンジ達成！", Toast.LENGTH_SHORT).show();
             }
+            // 「やった」ボタン押下時に連続日数を更新
+            updateStreakIfNeeded();
         });
+        updateStreakDisplay();  // 表示更新
     }
 
     private void loadButtonState() {
@@ -94,6 +85,58 @@ public class MainActivity extends AppCompatActivity {
             resetButtonState();
             prefs.edit().putBoolean(KEY_DONE, false).putString(KEY_DATE, today).apply();
         }
+        updateStreakIfNeeded();
+    }
+
+    private void updateStreakIfNeeded() {
+        System.out.print("A");
+        String lastDate = prefs.getString(KEY_LAST_DATE, "");
+        int streak = prefs.getInt(KEY_STREAK, 0);
+
+        if (lastDate.isEmpty()) {
+            // 初回：0日で保存
+            prefs.edit()
+                    .putInt(KEY_STREAK, 1)
+                    .putString(KEY_LAST_DATE, today)
+                    .apply();
+            return;
+        }
+
+        if (lastDate.equals(today)) {
+            // 今日すでに記録済み
+            return;
+        }
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+            Date last = sdf.parse(lastDate);
+            Date current = sdf.parse(today);
+
+            if (last != null && current != null) {
+                long diff = (current.getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
+
+                if (diff == 1) {
+                    streak++;
+                } else {
+                    streak = 1; // 連続じゃないのでリセット
+                }
+
+                prefs.edit()
+                        .putInt(KEY_STREAK, streak)
+                        .putString(KEY_LAST_DATE, today)
+                        .apply();
+            }
+        } catch (Exception e) {
+            Log.e("MainActivity", "Date parse error", e);
+        }
+
+        updateStreakDisplay();
+    }
+
+    private void updateStreakDisplay() {
+        int streak = prefs.getInt(KEY_STREAK, 0);
+        TextView streakText = findViewById(R.id.streakText);
+        streakText.setText(getString(R.string.streak_text, streak));  // プレースホルダ使用
     }
 
     private void setButtonToDoneState() {

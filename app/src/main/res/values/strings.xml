@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Final application activity</string>
+    <string name="streak_text">連続日数：%1$d日</string>
 </resources>

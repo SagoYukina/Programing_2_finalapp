@@ -69,6 +69,16 @@
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp" />
 
+            <TextView
+                android:id="@+id/streakText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:text="連続日数：0日"
+                android:textColor="@color/brandGray"
+                android:textSize="18sp"/>
+
 
 
         </LinearLayout>
