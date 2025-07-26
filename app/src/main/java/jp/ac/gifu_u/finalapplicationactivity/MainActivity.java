@@ -27,131 +27,153 @@ public class MainActivity extends AppCompatActivity {
     private TextView streakText;
 
     private SharedPreferences prefs;
-    private static final String PREFS_NAME     = "ChallengePrefs";
-    private static final String KEY_DATE       = "done_date";
-    private static final String KEY_DONE       = "done";
-    private static final String KEY_LAST_DATE  = "last_date";
-    private static final String KEY_STREAK     = "streak";
+    private static final String PREFS_NAME    = "ChallengePrefs";
+    private static final String KEY_DATE      = "done_date";
+    private static final String KEY_DONE      = "done";
+    private static final String KEY_LAST_DATE = "last_date";
+    private static final String KEY_STREAK    = "streak";
 
     private String today;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
-
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // チャレンジ文セット
-        TextView challengeText = findViewById(R.id.challengeText);
-        challengeText.setText(ChallengeUtil.getTodayChallenge(this));
-
         // ビュー取得
+        TextView challengeText = findViewById(R.id.challengeText);
         completeButton = findViewById(R.id.completeButton);
         hanamaruImage  = findViewById(R.id.hanamaruImage);
         streakText     = findViewById(R.id.streakText);
 
+        // チャレンジ文セット（毎回日付ベースで変わる）
+        challengeText.setText(ChallengeUtil.getTodayChallenge(this));
+
         // SharedPreferences 初期化
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        loadButtonState();
 
+        // ボタン押下処理
         completeButton.setOnClickListener(v -> {
             boolean isDone = prefs.getBoolean(KEY_DONE, false);
 
             if (isDone) {
-                // ── キャンセル処理 ──
+                // キャンセル処理
                 int currentStreak = prefs.getInt(KEY_STREAK, 0);
                 prefs.edit()
                         .putBoolean(KEY_DONE, false)
                         .putInt(KEY_STREAK, Math.max(0, currentStreak - 1))
-                        // ✅ 追加：キャンセル時は［前回押下日］をクリア
                         .putString(KEY_LAST_DATE, "")
                         .apply();
-
                 resetButtonState();
                 Toast.makeText(this, "キャンセルしました", Toast.LENGTH_SHORT).show();
             } else {
-                // ── 達成処理 ──
+                // 達成処理
                 prefs.edit()
                         .putBoolean(KEY_DONE, true)
                         .putString(KEY_DATE, today)
                         .apply();
-
                 setButtonToDoneState();
                 Toast.makeText(this, "チャレンジ達成！", Toast.LENGTH_SHORT).show();
-
-                // ── ストリーク更新 ──
                 updateStreakOnPress();
             }
-
-            // 表示を更新
             updateStreakDisplay();
         });
+    }
 
-        // 起動時のストリーク表示
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 毎回フォアグラウンド復帰時に「今日」を再取得
+        today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+        // ボタン状態＆ストリークリセットチェック
+        loadButtonState();
+        // 画面にストリーク数を反映
         updateStreakDisplay();
     }
 
-    /** ビューの状態（色・花丸）のみ復元。日付・連続記録は触らない */
+    /**
+     * ボタン完了状態を復元しつつ、
+     * 前回押下日とのギャップが1日以上あればストリークをリセットする
+     */
     private void loadButtonState() {
         String savedDate = prefs.getString(KEY_DATE, "");
         boolean isDone   = prefs.getBoolean(KEY_DONE, false);
 
-        if (today.equals(savedDate) && isDone) {
-            setButtonToDoneState();
-        } else {
+        // ── 今日かどうかで「やった！」ボタンの状態だけ決める ──
+        if (!today.equals(savedDate)) {
+            // 今日初回 → DONEフラグ false に
+            prefs.edit().putBoolean(KEY_DONE, false).apply();
             resetButtonState();
-        }
-    }
-
-    /**
-     * ボタン押下時のストリーク更新。
-     * 前回押下日が空 or 違う日なら1扱い、前日なら＋1、同日2回目以降は無視。
-     */
-    private void updateStreakOnPress() {
-        String lastDate = prefs.getString(KEY_LAST_DATE, "");
-        int streak      = prefs.getInt(KEY_STREAK, 0);
-
-        if (lastDate.isEmpty()) {
-            // 初回
-            streak = 1;
-        } else if (lastDate.equals(today)) {
-            // 同じ日2回目以降 → 無視
-            return;
         } else {
-            // 日付差分を計算
+            // 今日中に一度でも達成していれば DONE
+            if (isDone) setButtonToDoneState();
+            else        resetButtonState();
+        }
+
+        // ── 前回押下日とのギャップチェック ──
+        String lastDate = prefs.getString(KEY_LAST_DATE, "");
+        if (!lastDate.isEmpty()) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                 Date prev = sdf.parse(lastDate);
                 Date curr = sdf.parse(today);
                 long diffDays = (curr.getTime() - prev.getTime())
                         / (1000L * 60 * 60 * 24);
-
-                if (diffDays == 1) {
-                    streak++;
-                } else {
-                    streak = 1;
+                if (diffDays > 1) {
+                    // 1日以上空いた → ストリーク & 前回日付リセット
+                    prefs.edit()
+                            .putInt(KEY_STREAK, 0)
+                            .putString(KEY_LAST_DATE, "")
+                            .apply();
                 }
+            } catch (Exception e) {
+                Log.e("MainActivity", "Date parse error", e);
+            }
+        }
+    }
+
+    /**
+     * ボタン押下時にのみ呼ぶストリーク更新。
+     * ・初回押下→1
+     * ・同日2回目以降→無視
+     * ・前日押下→+1
+     * ・それ以外→1にリセット
+     */
+    private void updateStreakOnPress() {
+        String lastDate = prefs.getString(KEY_LAST_DATE, "");
+        int streak      = prefs.getInt(KEY_STREAK, 0);
+
+        if (lastDate.isEmpty()) {
+            streak = 1;
+        } else if (lastDate.equals(today)) {
+            return;
+        } else {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+                Date prev = sdf.parse(lastDate);
+                Date curr = sdf.parse(today);
+                long diffDays = (curr.getTime() - prev.getTime())
+                        / (1000L * 60 * 60 * 24);
+                if (diffDays == 1) streak++;
+                else               streak = 1;
             } catch (Exception e) {
                 Log.e("MainActivity", "Date parse error", e);
                 streak = 1;
             }
         }
-
         prefs.edit()
                 .putInt(KEY_STREAK, streak)
                 .putString(KEY_LAST_DATE, today)
                 .apply();
     }
 
-    /** 画面に連続日数を表示 */
+    /** 連続日数を画面に反映 */
     private void updateStreakDisplay() {
         int streak = prefs.getInt(KEY_STREAK, 0);
         streakText.setText(getString(R.string.streak_text, streak));
     }
 
-    /** 達成時のボタン・花丸表示 */
     private void setButtonToDoneState() {
         completeButton.setBackgroundTintList(
                 ColorStateList.valueOf(Color.parseColor("#C98A4A"))
@@ -160,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
         hanamaruImage.setVisibility(View.VISIBLE);
     }
 
-    /** 未達成時のボタン表示 */
     private void resetButtonState() {
         completeButton.setBackgroundTintList(
                 ColorStateList.valueOf(Color.parseColor("#F1B971"))
