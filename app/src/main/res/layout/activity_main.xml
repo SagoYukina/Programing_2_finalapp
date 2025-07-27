@@ -22,31 +22,30 @@
         app:subtitleCentered="true"
         tools:ignore="MissingConstraints" />
 
-    <!-- チャレンジカード -->
+    <!-- ★ バッジを横並びで追加するコンテナ -->
+    <LinearLayout
+        android:id="@+id/badgesContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="110dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ① チャレンジカード読み込み -->
     <include
         layout="@layout/view_challenge_card"
         android:id="@+id/cardInclude"
-        android:layout_width="400dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="160dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toBottomOf="@id/badgesContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"
         app:layout_constraintDimensionRatio="1:1" />
-
-    <!-- バッジ表示（カード中央寄りに重ねて表示） -->
-    <include
-        layout="@layout/view_badge"
-        android:id="@+id/badgeView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/cardInclude"
-        app:layout_constraintStart_toStartOf="@id/cardInclude"
-        app:layout_constraintEnd_toEndOf="@id/cardInclude"
-        android:translationY="-50dp" />
-    <!-- ↑ この数値で上下位置を微調整（例：-60dpや-40dpでもOK） -->
 
     <!-- コンテンツ部分（ボタンや連続日数） -->
     <androidx.core.widget.NestedScrollView
@@ -58,7 +57,6 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- NestedScrollView は子を 1 つしか持てないのでコンテナを用意 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -71,9 +69,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="525dp"
+                android:layout_marginTop="500dp"
                 android:background="@drawable/rounded_button"
-                android:backgroundTint="@null"
                 android:paddingLeft="48dp"
                 android:paddingTop="0dp"
                 android:paddingRight="48dp"
@@ -92,6 +89,7 @@
                 android:text="連続日数：0日"
                 android:textColor="@color/brandGray"
                 android:textSize="18sp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

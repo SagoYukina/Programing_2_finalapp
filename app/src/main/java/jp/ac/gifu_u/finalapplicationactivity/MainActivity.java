@@ -5,7 +5,9 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,8 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Button completeButton;
     private ImageView hanamaruImage;
     private TextView streakText;
-    private View badgeView;
-    private TextView badgeTitle;
+    private LinearLayout badgesContainer;   // ★ ここを追加
 
     private SharedPreferences prefs;
     private static final String PREFS_NAME = "ChallengePrefs";
@@ -55,11 +56,10 @@ public class MainActivity extends AppCompatActivity {
 
         // ビュー取得
         TextView challengeText = findViewById(R.id.challengeText);
-        completeButton = findViewById(R.id.completeButton);
-        hanamaruImage = findViewById(R.id.hanamaruImage);
-        streakText = findViewById(R.id.streakText);
-        badgeView = findViewById(R.id.badgeView);
-        badgeTitle = badgeView.findViewById(R.id.badgeTitle);
+        completeButton     = findViewById(R.id.completeButton);
+        hanamaruImage      = findViewById(R.id.hanamaruImage);
+        streakText         = findViewById(R.id.streakText);
+        badgesContainer    = findViewById(R.id.badgesContainer);  // ★ ここを追加
 
         // チャレンジ文セット（毎回日付ベースで変わる）
         challengeText.setText(ChallengeUtil.getTodayChallenge(this));
@@ -112,14 +112,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadButtonState() {
         String savedDate = prefs.getString(KEY_DATE, "");
-        boolean isDone = prefs.getBoolean(KEY_DONE, false);
+        boolean isDone  = prefs.getBoolean(KEY_DONE, false);
 
         if (!today.equals(savedDate)) {
             prefs.edit().putBoolean(KEY_DONE, false).apply();
             resetButtonState();
         } else {
             if (isDone) setButtonToDoneState();
-            else resetButtonState();
+            else        resetButtonState();
         }
 
         String lastDate = prefs.getString(KEY_LAST_DATE, "");
@@ -128,7 +128,8 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                 Date prev = sdf.parse(lastDate);
                 Date curr = sdf.parse(today);
-                long diffDays = (curr.getTime() - prev.getTime()) / (1000L * 60 * 60 * 24);
+                long diffDays = (curr.getTime() - prev.getTime())
+                        / (1000L * 60 * 60 * 24);
                 if (diffDays > 1) {
                     prefs.edit()
                             .putInt(KEY_STREAK, 0)
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateStreakOnPress() {
         String lastDate = prefs.getString(KEY_LAST_DATE, "");
-        int streak = prefs.getInt(KEY_STREAK, 0);
+        int streak      = prefs.getInt(KEY_STREAK, 0);
 
         if (lastDate.isEmpty()) {
             streak = 1;
@@ -154,9 +155,10 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                 Date prev = sdf.parse(lastDate);
                 Date curr = sdf.parse(today);
-                long diffDays = (curr.getTime() - prev.getTime()) / (1000L * 60 * 60 * 24);
+                long diffDays = (curr.getTime() - prev.getTime())
+                        / (1000L * 60 * 60 * 24);
                 if (diffDays == 1) streak++;
-                else streak = 1;
+                else                streak = 1;
             } catch (Exception e) {
                 Log.e("MainActivity", "Date parse error", e);
                 streak = 1;
@@ -174,26 +176,44 @@ public class MainActivity extends AppCompatActivity {
         streakText.setText(getString(R.string.streak_text, streak));
     }
 
+    /**
+     * ★ バッジを動的に inflate → 追加するメソッド
+     */
     private void updateBadges() {
         int streak = prefs.getInt(KEY_STREAK, 0);
 
-        if (streak >= BADGE_5DAYS) {
-            badgeTitle.setText(BADGE_5DAYS + "日");
-            badgeView.setVisibility(View.VISIBLE);
-        } else if (streak >= BADGE_4DAYS) {
-            badgeTitle.setText(BADGE_4DAYS + "日");
-            badgeView.setVisibility(View.VISIBLE);
-        } else if (streak >= BADGE_3DAYS) {
-            badgeTitle.setText(BADGE_3DAYS + "日");
-            badgeView.setVisibility(View.VISIBLE);
-        } else if (streak >= BADGE_2DAYS) {
-            badgeTitle.setText(BADGE_2DAYS + "日");
-            badgeView.setVisibility(View.VISIBLE);
-        } else if (streak >= BADGE_1DAYS) {
-            badgeTitle.setText(BADGE_1DAYS + "日");
-            badgeView.setVisibility(View.VISIBLE);
-        } else {
-            badgeView.setVisibility(View.GONE);
+        // いったん全部クリア
+        badgesContainer.removeAllViews();
+
+        // しきい値の配列
+        int[] thresholds = {
+                BADGE_1DAYS,
+                BADGE_2DAYS,
+                BADGE_3DAYS,
+                BADGE_4DAYS,
+                BADGE_5DAYS
+        };
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        for (int t : thresholds) {
+            if (streak >= t) {
+                // view_badge.xml を inflate
+                View badge = inflater.inflate(
+                        R.layout.view_badge,
+                        badgesContainer,
+                        false
+                );
+
+                // タイトル部分だけ書き換え
+                TextView title = badge.findViewById(R.id.badgeTitle);
+                title.setText(t + "日");
+
+                // バッジ色も変えたい場合はここで
+                // badge.setBackgroundTintList(...);
+
+                badgesContainer.addView(badge);
+            }
         }
     }
 
