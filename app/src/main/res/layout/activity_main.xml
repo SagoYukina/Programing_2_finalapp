@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -21,10 +22,11 @@
         app:subtitleCentered="true"
         tools:ignore="MissingConstraints" />
 
+    <!-- チャレンジカード -->
     <include
         layout="@layout/view_challenge_card"
         android:id="@+id/cardInclude"
-        android:layout_width="0dp"
+        android:layout_width="400dp"
         android:layout_height="0dp"
         android:layout_marginTop="160dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
@@ -33,9 +35,20 @@
         app:layout_constraintWidth_percent="0.8"
         app:layout_constraintDimensionRatio="1:1" />
 
+    <!-- バッジ表示（カード中央寄りに重ねて表示） -->
+    <include
+        layout="@layout/view_badge"
+        android:id="@+id/badgeView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/cardInclude"
+        app:layout_constraintStart_toStartOf="@id/cardInclude"
+        app:layout_constraintEnd_toEndOf="@id/cardInclude"
+        android:translationY="-50dp" />
+    <!-- ↑ この数値で上下位置を微調整（例：-60dpや-40dpでもOK） -->
 
-
-    <!-- ↓ 帯の下にメインコンテンツを配置 -->
+    <!-- コンテンツ部分（ボタンや連続日数） -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollContainer"
         android:layout_width="match_parent"
@@ -52,23 +65,24 @@
             android:orientation="vertical"
             android:paddingBottom="32dp">
 
-            <!-- 追加でボタンやバッジを縦に並べていく -->
+            <!-- 「やった！」ボタン -->
             <Button
                 android:id="@+id/completeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="やった！"
-                android:textSize="18sp"
-                android:textColor="#FFFFFF"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="525dp"
                 android:background="@drawable/rounded_button"
                 android:backgroundTint="@null"
-                android:layout_marginTop="450dp"
-                android:layout_gravity="center_horizontal"
                 android:paddingLeft="48dp"
+                android:paddingTop="0dp"
                 android:paddingRight="48dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp" />
+                android:paddingBottom="0dp"
+                android:text="やった！"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
 
+            <!-- 連続日数表示 -->
             <TextView
                 android:id="@+id/streakText"
                 android:layout_width="wrap_content"
@@ -77,14 +91,8 @@
                 android:layout_marginTop="16dp"
                 android:text="連続日数：0日"
                 android:textColor="@color/brandGray"
-                android:textSize="18sp"/>
-
-
-
+                android:textSize="18sp" />
         </LinearLayout>
-
-
-
     </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

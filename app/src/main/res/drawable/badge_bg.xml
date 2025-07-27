@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 背景色 -->
+    <solid android:color="#E57373"/>      <!-- お好みの色に変更 -->
+    <!-- 角丸半径（80dp の正円にしたいなら半径は40dp） -->
+    <corners android:radius="40dp"/>
+    <!-- サイズ指定（もし XML 背景でサイズも固定したい場合） -->
+    <size
+        android:width="80dp"
+        android:height="80dp"/>
+</shape>
