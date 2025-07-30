@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- ✅ 追加：正確なアラーム設定の権限（Android 12+） -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,15 +15,34 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FinalApplicationActivity"
         tools:targetApi="31">
+
+        <!-- メインアクティビティ -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <!-- ウィジェットプロバイダー -->
+        <receiver
+            android:name=".MSCWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <!-- ✅ 追加：ウィジェットボタン押下用 -->
+                <action android:name="ACTION_MARK_COMPLETE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/msc_widget_info" />
+        </receiver>
+
+        <!-- ✅ AlarmManager 用のブロードキャストレシーバー -->
+        <receiver
+            android:name=".DateChangeReceiver"
+            android:exported="false" />
+    </application>
 </manifest>

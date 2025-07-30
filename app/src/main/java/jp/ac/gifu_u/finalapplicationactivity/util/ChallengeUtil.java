@@ -12,35 +12,37 @@ import jp.ac.gifu_u.finalapplicationactivity.R;
 
 public final class ChallengeUtil {
 
-    private static final String PREF     = "challenge_pref";
-    private static final String KEY_DATE = "lastShownDate";
-    private static final String KEY_TEXT = "todayChallengeText";
+    private static final String PREF        = "ChallengePrefs";
+    private static final String KEY_DATE    = "last_challenge_date";
+    private static final String KEY_TEXT    = "today_challenge";
 
-    /** 日付を見て、今日のチャレンジ文を返す */
+    /** 今日のチャレンジ内容を返す（初回 or 日付変更で更新） */
     public static String getTodayChallenge(Context ctx) {
         SharedPreferences sp = ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE);
+        String today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
 
-        // ← ここが LocalDate ではなく Date＋SDF
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                .format(new Date());
+        String lastDate = sp.getString(KEY_DATE, "");
+        String savedText = sp.getString(KEY_TEXT, null);
 
-        // すでに今日取得済み？
-        if (today.equals(sp.getString(KEY_DATE, ""))) {
-            return sp.getString(KEY_TEXT, "");   // 保存済みを返す
+        if (!today.equals(lastDate)) {
+            // 新しい日付ならランダムチャレンジ生成
+            String[] list = ctx.getResources().getStringArray(R.array.challenge_list);
+            String newText = list[new Random().nextInt(list.length)];
+
+            sp.edit()
+                    .putString(KEY_TEXT, newText)
+                    .putString(KEY_DATE, today)
+                    .apply();
+
+            return newText;
         }
 
-        // 新しい日 → ランダム抽選
-        String[] list = ctx.getResources().getStringArray(R.array.challenge_list);
-        String text   = list[new Random().nextInt(list.length)];
+        // 同じ日なら保存済みの内容を返す
+        if (savedText != null) return savedText;
 
-        // 保存
-        sp.edit()
-                .putString(KEY_DATE, today)
-                .putString(KEY_TEXT, text)
-                .apply();
-
-        return text;
+        // 念のため fallback
+        return "チャレンジが見つかりません";
     }
 
-    private ChallengeUtil() {}   // インスタンス不可
+    private ChallengeUtil() {}  // インスタンス化禁止
 }

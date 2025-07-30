@@ -12,6 +12,9 @@ import android.widget.TextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.widget.RemoteViews;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,7 +27,6 @@ import jp.ac.gifu_u.finalapplicationactivity.util.ChallengeUtil;
 
 public class MainActivity extends AppCompatActivity {
 
-    // ── バッジ表示用しきい値 ──
     private static final int BADGE_1DAYS = 1;
     private static final int BADGE_2DAYS = 2;
     private static final int BADGE_3DAYS = 3;
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private Button completeButton;
     private ImageView hanamaruImage;
     private TextView streakText;
-    private LinearLayout badgesContainer;   // ★ ここを追加
+    private LinearLayout badgesContainer;
 
     private SharedPreferences prefs;
     private static final String PREFS_NAME = "ChallengePrefs";
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_DONE = "done";
     private static final String KEY_LAST_DATE = "last_date";
     private static final String KEY_STREAK = "streak";
+    private static final String KEY_CHALLENGE = "today_challenge";
 
     private String today;
 
@@ -51,28 +54,26 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // ── 「今日」を取得 ──
         today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
 
-        // ビュー取得
         TextView challengeText = findViewById(R.id.challengeText);
         completeButton     = findViewById(R.id.completeButton);
         hanamaruImage      = findViewById(R.id.hanamaruImage);
         streakText         = findViewById(R.id.streakText);
-        badgesContainer    = findViewById(R.id.badgesContainer);  // ★ ここを追加
+        badgesContainer    = findViewById(R.id.badgesContainer);
 
-        // チャレンジ文セット（毎回日付ベースで変わる）
-        challengeText.setText(ChallengeUtil.getTodayChallenge(this));
-
-        // SharedPreferences 初期化
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        // ボタン押下処理
+        // ✅ ChallengeUtilからその日のチャレンジを取得（初回アクセスではなく日付更新ベース）
+        String challenge = ChallengeUtil.getTodayChallenge(this);
+        challengeText.setText(challenge);
+
+        prefs.edit().putString(KEY_CHALLENGE, challenge).apply();
+
         completeButton.setOnClickListener(v -> {
             boolean isDone = prefs.getBoolean(KEY_DONE, false);
 
             if (isDone) {
-                // ── キャンセル処理 ──
                 int currentStreak = prefs.getInt(KEY_STREAK, 0);
                 prefs.edit()
                         .putBoolean(KEY_DONE, false)
@@ -82,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 resetButtonState();
                 Toast.makeText(this, "キャンセルしました", Toast.LENGTH_SHORT).show();
             } else {
-                // ── 達成処理 ──
                 prefs.edit()
                         .putBoolean(KEY_DONE, true)
                         .putString(KEY_DATE, today)
@@ -92,12 +92,19 @@ public class MainActivity extends AppCompatActivity {
                 updateStreakOnPress();
             }
 
-            // 表示更新
             updateStreakDisplay();
             updateBadges();
+
+            // ✅ ウィジェットもリアルタイム更新
+            AppWidgetManager manager = AppWidgetManager.getInstance(getApplicationContext());
+            ComponentName widget = new ComponentName(getApplicationContext(), MSCWidgetProvider.class);
+            int[] ids = manager.getAppWidgetIds(widget);
+            RemoteViews views = new RemoteViews(getPackageName(), R.layout.widget_msc);
+            views.setTextViewText(R.id.textChallenge, ChallengeUtil.getTodayChallenge(getApplicationContext()));
+            views.setTextViewText(R.id.textStreak, "連続日数：" + prefs.getInt(KEY_STREAK, 0) + "日");
+            manager.updateAppWidget(ids, views);
         });
 
-        // 起動時にもバッジを更新しておく
         updateBadges();
     }
 
@@ -128,8 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                 Date prev = sdf.parse(lastDate);
                 Date curr = sdf.parse(today);
-                long diffDays = (curr.getTime() - prev.getTime())
-                        / (1000L * 60 * 60 * 24);
+                long diffDays = (curr.getTime() - prev.getTime()) / (1000L * 60 * 60 * 24);
                 if (diffDays > 1) {
                     prefs.edit()
                             .putInt(KEY_STREAK, 0)
@@ -155,10 +161,9 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                 Date prev = sdf.parse(lastDate);
                 Date curr = sdf.parse(today);
-                long diffDays = (curr.getTime() - prev.getTime())
-                        / (1000L * 60 * 60 * 24);
+                long diffDays = (curr.getTime() - prev.getTime()) / (1000L * 60 * 60 * 24);
                 if (diffDays == 1) streak++;
-                else                streak = 1;
+                else streak = 1;
             } catch (Exception e) {
                 Log.e("MainActivity", "Date parse error", e);
                 streak = 1;
@@ -176,16 +181,10 @@ public class MainActivity extends AppCompatActivity {
         streakText.setText(getString(R.string.streak_text, streak));
     }
 
-    /**
-     * ★ バッジを動的に inflate → 追加するメソッド
-     */
     private void updateBadges() {
         int streak = prefs.getInt(KEY_STREAK, 0);
-
-        // いったん全部クリア
         badgesContainer.removeAllViews();
 
-        // しきい値の配列
         int[] thresholds = {
                 BADGE_1DAYS,
                 BADGE_2DAYS,
@@ -198,20 +197,9 @@ public class MainActivity extends AppCompatActivity {
 
         for (int t : thresholds) {
             if (streak >= t) {
-                // view_badge.xml を inflate
-                View badge = inflater.inflate(
-                        R.layout.view_badge,
-                        badgesContainer,
-                        false
-                );
-
-                // タイトル部分だけ書き換え
+                View badge = inflater.inflate(R.layout.view_badge, badgesContainer, false);
                 TextView title = badge.findViewById(R.id.badgeTitle);
                 title.setText(t + "日");
-
-                // バッジ色も変えたい場合はここで
-                // badge.setBackgroundTintList(...);
-
                 badgesContainer.addView(badge);
             }
         }

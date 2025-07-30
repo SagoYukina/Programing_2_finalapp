@@ -1,0 +1,35 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFF9F4"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/textChallenge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="チャレンジを表示"
+        android:textColor="#444"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/textStreak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="連続日数：0日"
+        android:textColor="#888"
+        android:textSize="14sp"
+        android:paddingTop="4dp"/>
+
+    <Button
+        android:id="@+id/buttonComplete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="やった！"
+        android:backgroundTint="#F4A261"
+        android:textColor="#fff"
+        android:paddingHorizontal="12dp"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>
