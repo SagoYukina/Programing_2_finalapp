@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Brand palette -->
+    <color name="brandPink">#FFDCEE</color>
+    <color name="brandOrange">#DEA45E</color>
+    <color name="brandRed">#E5616B</color>
+    <color name="brandGray">#666666</color>
+    <color name="brandOffWhite">#FFF4E9</color>
+
+    <!-- Material system slots -->
+    <color name="colorPrimary">@color/brandPink</color>
+    <color name="colorSecondary">@color/brandOrange</color>
+    <color name="colorSecondaryVariant">#F5BF81</color>
+    <color name="colorAccent">@color/brandOrange</color>
+    <color name="colorSurface">@color/brandOffWhite</color>
+    <color name="colorOnPrimary">@color/brandGray</color>
+    <color name="colorOnSecondary">@android:color/white</color>
 </resources>
